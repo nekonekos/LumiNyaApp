@@ -31,27 +31,7 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease
 
-      # 验证密钥库兼容性（避免签名失败）
-      - name: Verify Keystore Compatibility
-        id: verify_keystore
-        env:
-          SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY }}
-          ALIAS: ${{ secrets.ALIAS }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
-        run: |
-          KEYTOOL="${JAVA_HOME}/bin/keytool"
-          echo "$SIGNING_KEY_BASE64" | base64 -d > temp.keystore
-          if "$KEYTOOL" -list -keystore temp.keystore -storepass "$KEYSTORE_PASSWORD" -alias "$ALIAS"; then
-            echo "✅ 密钥库验证成功"
-            echo "compatible=true" >> $GITHUB_OUTPUT
-          else
-            echo "❌ 密钥库验证失败，具体错误如上"
-            echo "compatible=false" >> $GITHUB_OUTPUT
-          fi
-          rm -f temp.keystore
-      # 签名 Release APK（仅在验证通过时执行）
       - name: Sign Release APK
-        if: steps.verify_keystore.outputs.compatible == 'true'
         uses: r0adkll/sign-android-release@v1
         id: sign_app
         with:
@@ -64,7 +44,6 @@ jobs:
           BUILD_TOOLS_VERSION: "34.0.0"
         continue-on-error: true
 
-      # 上传 Debug APK
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
@@ -72,7 +51,6 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
-      # 上传 Signed Release APK（如果签名成功）
       - name: Upload Signed Release APK
         if: steps.sign_app.outcome == 'success'
         uses: actions/upload-artifact@v4
@@ -81,9 +59,8 @@ jobs:
           path: ${{ steps.sign_app.outputs.signedReleaseFile }}
           retention-days: 30
 
-      # 上传 Unsigned Release APK（签名失败或未执行签名）
       - name: Upload Unsigned Release APK
-        if: steps.sign_app.outcome != 'success' || steps.verify_keystore.outputs.compatible != 'true'
+        if: steps.sign_app.outcome != 'success'
         uses: actions/upload-artifact@v4
         with:
           name: LumiNya-release-apk

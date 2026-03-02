@@ -4,6 +4,7 @@
 - **应用名称**: LumiNya
 - **包名**: cc.luminya.lumiapp
 - **网站地址**: https://luminya.cc
+- **版本**: 1.20.1 (1)
 - **最低Android版本**: API 26
 
 ## 构建说明
@@ -50,3 +51,6 @@ cd LumiNya
 
 ### 修改应用图标
 替换 `app/src/main/res/mipmap-*/ic_launcher.png` 和 `ic_launcher_round.png`
+
+---
+由 APK在线打包工具 生成
