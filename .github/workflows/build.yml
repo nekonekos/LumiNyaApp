@@ -41,15 +41,14 @@ jobs:
         run: |
           KEYTOOL="${JAVA_HOME}/bin/keytool"
           echo "$SIGNING_KEY_BASE64" | base64 -d > temp.keystore
-          if "$KEYTOOL" -list -keystore temp.keystore -storepass "$KEYSTORE_PASSWORD" -alias "$ALIAS" > /dev/null 2>&1; then
+          if "$KEYTOOL" -list -keystore temp.keystore -storepass "$KEYSTORE_PASSWORD" -alias "$ALIAS"; then
             echo "✅ 密钥库验证成功"
             echo "compatible=true" >> $GITHUB_OUTPUT
           else
-            echo "❌ 密钥库验证失败，请检查 Secrets 是否正确"
+            echo "❌ 密钥库验证失败，具体错误如上"
             echo "compatible=false" >> $GITHUB_OUTPUT
           fi
           rm -f temp.keystore
-
       # 签名 Release APK（仅在验证通过时执行）
       - name: Sign Release APK
         if: steps.verify_keystore.outputs.compatible == 'true'
